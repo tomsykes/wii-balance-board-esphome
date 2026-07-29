@@ -224,7 +224,9 @@ Wii::Wii(Bluetooth *bt) : bluetooth(bt) {
                      }
                    },
                    [bt](const HCIConnectionFailed &result) {
-                     log_e("Failed to connect Wiimote %s", formatHex((uint8_t *) &result.bdaddr, 6));
+                     log_e("Failed to connect Wiimote %s reason=0x%02X accepted=%d handle=%d",
+                           formatHex((uint8_t *) &result.bdaddr, 6), result.reason, (int) result.accepted,
+                           result.handle);
                    },
                    [bt](const HCIConnectionEstablished &result) {
                      log_i("Wiimote connection %s, handle: %d", result.accepted ? "accepted" : "established",
