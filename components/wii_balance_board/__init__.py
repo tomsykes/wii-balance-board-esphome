@@ -22,6 +22,7 @@ DEPENDENCIES = ["binary_sensor", "sensor"]
 AUTO_LOAD = ["binary_sensor", "sensor"]
 
 CONF_SYNCING = "syncing"
+CONF_CONNECTED = "connected"
 CONF_WEIGHT = "weight"
 CONF_TEMPERATURE = "temperature_sensor"
 CONF_REF_TEMPERATURE = "reference_temperature_sensor"
@@ -91,6 +92,14 @@ CONFIG_SCHEMA = cv.Schema(
         ): binary_sensor.binary_sensor_schema(
             icon=ICON_BLUETOOTH,
         ),
+        cv.Optional(
+            CONF_CONNECTED,
+            default={
+                CONF_NAME: "Balance Board Connected",
+            },
+        ): binary_sensor.binary_sensor_schema(
+            icon=ICON_BLUETOOTH,
+        ),
         cv.Optional(CONF_STDDEV, default=0.4): cv.float_range(0, 5),
     }
 )
@@ -117,6 +126,9 @@ async def to_code(config):
 
     syncing = await binary_sensor.new_binary_sensor(config.get(CONF_SYNCING))
     cg.add(var.set_syncing(syncing))
+
+    connected = await binary_sensor.new_binary_sensor(config.get(CONF_CONNECTED))
+    cg.add(var.set_connected(connected))
 
     if led_pin := config.get(CONF_LED_PIN):
         cg.add(var.set_led_pin(led_pin))

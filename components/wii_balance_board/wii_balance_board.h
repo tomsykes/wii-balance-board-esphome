@@ -35,6 +35,7 @@ class WiiBalanceBoard : public Component {
   void set_battery_level(sensor::Sensor *battery_level);
   void set_weight(sensor::Sensor *weight);
   void set_syncing(binary_sensor::BinarySensor *syncing);
+  void set_connected(binary_sensor::BinarySensor *connected);
   void set_stddev(float stddev);
   void set_led_pin(int led_pin);
 
@@ -57,6 +58,7 @@ class WiiBalanceBoard : public Component {
   sensor::Sensor *battery_level_{nullptr};
   sensor::Sensor *weight_{nullptr};
   binary_sensor::BinarySensor *syncing_{nullptr};
+  binary_sensor::BinarySensor *connected_{nullptr};
 };
 
 }  // namespace wii_balance_board
