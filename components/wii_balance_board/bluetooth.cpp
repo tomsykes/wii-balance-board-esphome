@@ -200,10 +200,17 @@ struct Bluetooth::Impl {
       }
     } else if (data[1] == 0x24 && data[2] == 0x0C) {  // write_class_of_device
       if (data[3] == 0x00) {                          // OK
-        CHECK_RESULT(enqueue_cmd_write_scan_enable(txBuffer, 3));
+        // Widen page scan from the 0x0800/0x0012 default (~1% duty cycle) so
+        // the board's A-button page is far more likely to be heard.
+        CHECK_RESULT(enqueue_cmd_write_page_scan_activity(txBuffer, 0x0400, 0x0120));
       } else {
         ESP_LOGE(TAG, "write_class_of_device failed.");
       }
+    } else if (data[1] == 0x1C && data[2] == 0x0C) {  // write_page_scan_activity
+      if (data[3] != 0x00) {
+        ESP_LOGE(TAG, "write_page_scan_activity failed, status=%02X", data[3]);
+      }
+      CHECK_RESULT(enqueue_cmd_write_scan_enable(txBuffer, 3));
     } else if (data[1] == 0x1A && data[2] == 0x0C) {  // write_scan_enable
       if (data[3] == 0x00) {                          // OK
         initialized = true;

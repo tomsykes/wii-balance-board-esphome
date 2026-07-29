@@ -105,6 +105,18 @@ static bool enqueue_cmd_write_class_of_device(RingBuffer &buffer, uint8_t *cod) 
   return false;
 }
 
+static bool enqueue_cmd_write_page_scan_activity(RingBuffer &buffer, uint16_t interval, uint16_t window) {
+  if (auto out = buffer.allocate(HCI_H4_CMD_PREAMBLE_SIZE + 4)) {
+    uint8_t *buf = out.data();
+    UINT8_TO_STREAM(buf, H4_TYPE_COMMAND);
+    UINT16_TO_STREAM(buf, 0x0C1C);
+    UINT8_TO_STREAM(buf, 4);
+    UINT16_TO_STREAM(buf, interval);
+    UINT16_TO_STREAM(buf, window);
+    return true;
+  }
+  return false;
+}
 static bool enqueue_cmd_write_scan_enable(RingBuffer &buffer, uint8_t mode) {
   if (auto out = buffer.allocate(HCI_H4_CMD_PREAMBLE_SIZE + 1)) {
     uint8_t *buf = out.data();
