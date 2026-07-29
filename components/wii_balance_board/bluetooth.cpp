@@ -6,6 +6,11 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+// Arduino's initArduino() releases all Bluetooth controller memory when
+// btInUse() is false. It's a weak symbol; BluetoothSerial/BLEDevice normally
+// override it. We drive VHCI directly and link neither, so we claim it here.
+extern "C" bool btInUse() { return true; }
+
 #include <unordered_map>
 #include <unordered_set>
 
