@@ -3,6 +3,8 @@
 
 #include <esp32-hal-bt.h>
 #include <esp_bt.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 #include <unordered_map>
 #include <unordered_set>
@@ -699,9 +701,26 @@ static int recv(uint8_t *data, uint16_t len) { return gListener(data, len); }
 static const esp_vhci_host_callback_t callback = {sendReady, recv};
 
 Bluetooth::Bluetooth() : m_impl(std::make_unique<Bluetooth::Impl>(this)) {
-  if (!btStart()) {
-    ESP_LOGE(TAG, "Failed to initialize Bluetooth");
-    return;
+  {
+    esp_err_t ret;
+    if (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_IDLE) {
+      vTaskDelay(pdMS_TO_TICKS(100));
+      esp_bt_controller_config_t cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+      if ((ret = esp_bt_controller_init(&cfg)) != ESP_OK) {
+        ESP_LOGE(TAG, "controller init failed: %s", esp_err_to_name(ret));
+        return;
+      }
+      while (esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_IDLE) {
+        vTaskDelay(pdMS_TO_TICKS(10));
+      }
+    }
+    if (esp_bt_controller_get_status() != ESP_BT_CONTROLLER_STATUS_ENABLED) {
+      if ((ret = esp_bt_controller_enable(ESP_BT_MODE_BTDM)) != ESP_OK) {
+        ESP_LOGE(TAG, "controller enable failed: %s", esp_err_to_name(ret));
+        return;
+      }
+    }
+    ESP_LOGI(TAG, "controller up, status=%d", (int) esp_bt_controller_get_status());
   }
 
   auto *impl = m_impl.get();
